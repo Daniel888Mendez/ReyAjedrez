@@ -5,32 +5,20 @@ import javax.naming.OperationNotSupportedException;
 public class Rey {
     private Color color;
     private Posicion posicion;
-    private int totalMovimientos=0;
+    private int totalMovimientos = 0;
 
-/*constructor por defecto; sin ningun parametro,
- pondra el atributo de la clase rey ,
- gracias al setColor en color blanco previamente definido,
- como un enum de la clase color y en la posicion 1e*/
+/*constructor por defecto; sin ningún parámetro,
+ pondrá el atributo de la clase rey,
+ gracias al setColor y posición en color blanco y posición 1e*/
 
     public Rey() {
         setColor(Color.BLANCO);
-        setPosicion(new Posicion(1,'e'));
+        setPosicion(new Posicion(1, 'e'));
     }
 
-/* Constructor con parametro color de la clase Color
-* si la condicion es BLANCO creara un nuevo objeto possicion
-* usando el constructor de la clase posicion que tiene dos parametros(fila,columna)*/
-
+//Constructor con parámetro color de la clase Color
     public Rey(Color color) {
-        if(color==Color.BLANCO){
-            setPosicion(new Posicion(1,'e'));
-        }
-        if(color==Color.NEGRO){
-            setPosicion(new Posicion(8,'e'));
-        }
-        if (color==null){
-            throw new NullPointerException("Error. el color no puede ser nulo.");
-        }
+        setColor(color);
     }
 
     public Color getColor() {
@@ -38,10 +26,18 @@ public class Rey {
     }
 
     private void setColor(Color color) {
-        if (color == null){
-            throw new NullPointerException("Error.El color no puede ser nulo.");
+        if (color == null) {
+            throw new NullPointerException("ERROR: El color no puede ser nulo.");
         }
-        this.color = color;
+        if (color == Color.BLANCO) {
+            setPosicion(new Posicion(1, 'e'));
+            this.color = color;
+        }
+        if (color == Color.NEGRO) {
+            setPosicion(new Posicion(8, 'e'));
+            this.color = color;
+        }
+
     }
 
     public Posicion getPosicion() {
@@ -49,7 +45,7 @@ public class Rey {
     }
 
     private void setPosicion(Posicion posicion) {
-        if(posicion==null){
+        if (posicion == null) {
             throw new NullPointerException("Error la posicion no puede ser nula.");
         }
         this.posicion = posicion;
@@ -64,30 +60,88 @@ public class Rey {
     }
 
     public void mover(Direccion direccion) throws OperationNotSupportedException {
-        if (direccion==null){
-            throw  new NullPointerException("ERROR.La direccion no puede ser nula");
-        }
-        if (direccion==Direccion.ENROQUE_CORTO && totalMovimientos>0){
-            throw new OperationNotSupportedException("ERROR.No se puede hacer enrroque corto si ya se ha movido el rey");
-        }
-        if (direccion==Direccion.ENROQUE_LARGO && totalMovimientos>0){
-            throw new OperationNotSupportedException("ERROR.No se puede hacer enrroque largo si ya se ha movido el rey");
+
+        if (direccion == null) {
+            throw new NullPointerException("ERROR: La dirección no puede ser nula.");
         }
 
-        switch (direccion){
-            case SUR ->
-                getPosicion();
+        if (direccion == Direccion.ENROQUE_CORTO) {
+            comprobarEnroque();
+            setPosicion(new Posicion(posicion.getFila(), (char) (posicion.getColumna() + 2)));
+            totalMovimientos++;
         }
 
+        if (direccion == Direccion.ENROQUE_LARGO) {
+            comprobarEnroque();
+            setPosicion(new Posicion(posicion.getFila(), (char) (posicion.getColumna() - 2)));
+            totalMovimientos++;
+        }
+
+        //Este try atrapará cualquier error de IllegalargumenException y lo lanza como operation con un mensaje personalizado.
+        //Exactamente, capturará los ilegals del los métodos setPosicion de Posicion.
+        //Esto solo lo atrapará y lo lanza para que otro método lo gestione, la próxima vez que usemos este método lo tendremos que gestionar o seguir lanzándolo para que lo gestione en otra parte.
+        try {
+            switch (direccion) {
+                case NORTE:
+                    setPosicion(new Posicion(posicion.getFila() + 1, posicion.getColumna()));
+                    totalMovimientos++;
+                    break;
+                case SUR:
+                    setPosicion(new Posicion(posicion.getFila() - 1, posicion.getColumna()));
+                    totalMovimientos++;
+                    break;
+                case ESTE:
+                    setPosicion(new Posicion(posicion.getFila(), (char) (posicion.getColumna() + 1)));
+                    totalMovimientos++;
+                    break;
+                case OESTE:
+                    setPosicion(new Posicion(posicion.getFila(), (char) (posicion.getColumna() - 1)));
+                    totalMovimientos++;
+                    break;
+                case NORESTE:
+                    setPosicion(new Posicion(posicion.getFila() + 1, (char) (posicion.getColumna() + 1)));
+                    totalMovimientos++;
+                    break;
+                case NOROESTE:
+                    setPosicion(new Posicion(posicion.getFila() + 1, (char) (posicion.getColumna() - 1)));
+                    totalMovimientos++;
+                    break;
+                case SURESTE:
+                    setPosicion(new Posicion(posicion.getFila() - 1, (char) (posicion.getColumna() + 1)));
+                    totalMovimientos++;
+                    break;
+                case SUROESTE:
+                    setPosicion(new Posicion(posicion.getFila() - 1, (char) (posicion.getColumna() - 1)));
+                    totalMovimientos++;
+                    break;
+            }
+
+        } catch (IllegalArgumentException e) {
+            throw new OperationNotSupportedException("ERROR: Movimiento no válido (se sale del tablero).");
+        }
 
     }
 
 
+    //Este método primero comprueba si está en la posición inicial y si nó, lanzará la excepción.
+    //El segundo if lanza excepción solo si está en su posición inicial, pero ya se ha movido con anterioridad.
+    private void comprobarEnroque() throws OperationNotSupportedException {
 
+        if ((posicion.equals(new Posicion(1,'e'))) || (posicion.equals(new Posicion(8,'e')))) {
+            if (totalMovimientos>0){
+                throw new OperationNotSupportedException("ERROR: El rey ya se ha movido antes.");
+            }
 
+        } else {
+            throw new OperationNotSupportedException("ERROR: El rey no está en su posición inicial.");
+        }
 
+    }
 
-
-
+    @Override
+    //Practicando el string.format
+    public String toString () {
+        return String.format("color=%s, posicion=(%s)", color, posicion);
+    }
 
 }

@@ -1,6 +1,5 @@
 
 package org.iesalandalus.programacion.reyajedrez.modelo;
-
 import java.util.Objects;
 
 public class Posicion {
@@ -8,28 +7,33 @@ public class Posicion {
     private int fila;
     private  char columna;
 
-
+    //Constructor con parámetro fila columna,
     public Posicion(int fila, char columna) {
         setFila(fila);
         setColumna(columna);
     }
 
+    //Constructor copia.
+    //La línea 22 y 23 no se usan,"o eso creo" pero las dejo por si acaso.
     public Posicion(Posicion posicion){
+        if (posicion==null){
+            throw new NullPointerException("ERROR: No es posible copiar una posición nula.");
+        }
         fila= posicion.getFila();
         columna= posicion.getColumna();
         posicion=new Posicion(getFila(),getColumna());
-    }
 
+    }
 
     public int getFila() {
         return fila;
     }
 
     private void setFila(int fila) {
-        if (fila>=1 && fila<=8){
-            this.fila = fila;
-        }else
-            throw  new IllegalArgumentException("La fila devuelta no es la esperada.");
+        if (fila<1 || fila>8){
+            throw new IllegalArgumentException("ERROR: Fila no válida.");
+        }
+        this.fila=fila;
     }
 
     public char getColumna() {
@@ -40,7 +44,7 @@ public class Posicion {
         if (columna>='a' && columna<='h'){
             this.columna = columna;
         }else
-            throw new IllegalArgumentException("La columna devuelta no es la esperada.");
+            throw new IllegalArgumentException("ERROR: Columna no válida.");
     }
 
     @Override
@@ -57,7 +61,9 @@ public class Posicion {
     }
 
     @Override
+    //Practicando el string.format
     public String toString() {
         return String.format("fila=%s, columna=%s",fila, columna);
     }
+
 }
